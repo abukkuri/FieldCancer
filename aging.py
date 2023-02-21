@@ -39,9 +39,6 @@ def run_this():
         t = [0]
 
         while t[-1] < tend:
-            
-                '''if t[-1]>500 and normal[-1]>20:
-                    normal[-1] = normal[-1]*0.1'''
 
                 current_n = normal[-1]
                 current_pre = pre[-1]
@@ -150,7 +147,6 @@ for line in leg.get_lines():
 plt.xlim(0,tend)
 plt.ylim(0)
 ax = plt.gca()
-#ax.axvspan(200, 800, facecolor=(0.5,0.5,0.5))
 plt.ylabel('Population Size')
 plt.xlabel('Time')
 plt.tight_layout()
