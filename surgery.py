@@ -151,7 +151,6 @@ for line in leg.get_lines():
 plt.xlim(0,tend)
 plt.ylim(0)
 ax = plt.gca()
-#ax.axvspan(200, 800, facecolor=(0.5,0.5,0.5))
 plt.ylabel('Population Size')
 plt.xlabel('Time')
 plt.tight_layout()
