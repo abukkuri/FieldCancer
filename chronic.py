@@ -3,62 +3,54 @@ import matplotlib.pyplot as plt
 import random, math
 
 num_sims = 10
-mut = 0.01
+mut = 10**(-3)
+mut2 = 10**(-5)
 
-K1 = 100
-K2 = 150
-rN = 0.03
-rP = 0.06
-rM = 0.08
-dN = 0.01
+K1 = 10**4
+K2 = 10**5
+rN = 0.3
+rP = 0.6
+rM = 0.8
+dN = 0.1
 
-tend = 2500
-wound = 500
+tend = 750
+wound = 100
 
 norm_macro = []
 pre_macro = []
 mal_macro = []
 t_macro = []
-extinct = []
 
+def cP(N,P,M):
+    eqb = K1-(K1*dN)/rN
+    return 0.3+0.3*np.tanh(P+N+M-eqb)
 
-def cP(t):
-    if t < wound:
-        return .04
-    else:
-        return .01
-
-
-def cM(t):
-    if t < wound:
-        return .08
-    else:
-        return .02
+def cM(N,P,M):
+    eqb = K1-(K1*dN)/rN
+    return 0.6+0.6*np.tanh(P+N+M-eqb)
 
 
 def sN(t):
     if t > wound:
-        return 0.01
+        return .15
     else:
         return 0
 
-
 def sP(t):
     if t > wound:
-        return 0.01
+        return .15
     else:
         return 0
 
 
 def sM(t):
     if t > wound:
-        return 0.01
+        return .15
     else:
         return 0
 
-
 def run_this():
-    normal = [10]
+    normal = [int(K1-(K1*dN)/rN)]
     pre = [0]
     mal = [0]
     t = [0]
@@ -69,17 +61,13 @@ def run_this():
         current_pre = pre[-1]
         current_mal = mal[-1]
 
-        # broken into birth, death, switching
-
-        rates = [(current_n * rN), current_n * (rN * ((current_pre + current_n) / K1) + dN + sN(t[-1])),
-                 (current_pre * rP), current_pre * (rP * ((current_pre + current_n) / K1) + dN + cP(t[-1]) + sP(t[-1])),
-                 (current_mal * rM), current_mal * (rM * (current_mal / K2) + dN + cM(t[-1]) + sM(t[-1]))]
+        rates = [current_n * rN * (K1 - current_pre - current_n) / K1, current_n * (dN + sN(t[-1])),
+                 current_pre * rP * (K1 - current_pre - current_n) / K1,
+                 current_pre * (dN + cP(current_n, current_pre, current_mal) + sP(t[-1])),
+                 current_mal * rM * (K2 - current_mal) / K2,
+                 current_mal * (dN + cM(current_n, current_pre, current_mal) + sM(t[-1]))]
 
         rate_sum = sum(rates)
-
-        if rate_sum == 0:
-            extinct.append(t[-1])
-            break
 
         tau = np.random.exponential(scale=1 / rate_sum)
 
@@ -107,7 +95,7 @@ def run_this():
         # Precancerous division event
         elif rand * rate_sum > sum(rates[:2]) and rand * rate_sum <= sum(rates[:3]):
             normal.append(normal[-1])
-            if random.uniform(0, 1) > mut:
+            if random.uniform(0, 1) > mut2:
                 pre.append(pre[-1] + 1)
                 mal.append(mal[-1])
             else:
@@ -141,18 +129,10 @@ def run_this():
 
 for i in range(num_sims):
     run_this()
+    print(i+1)
 
 lwi = 0.3
 
-extinct_events = len(extinct)
-avg_extinct = np.mean(extinct)
-std_extinct = np.std(extinct)
-
-print(extinct_events)
-print(avg_extinct)
-print(std_extinct)
-
-plt.figure()
 fig, ax = plt.subplots()
 ax.set_title('Chronic Wounding')
 ax.plot(t_macro[0], norm_macro[0], label='Normal', c='r', lw=lwi)
@@ -164,17 +144,13 @@ for i in range(1, num_sims):
     ax.plot(t_macro[i], pre_macro[i], c='b', lw=lwi)
     ax.plot(t_macro[i], mal_macro[i], c='k', lw=lwi)
 
-# get the legend object
 leg = ax.legend()
-
-# change the line width for the legend
 for line in leg.get_lines():
     line.set_linewidth(2)
 
 plt.xlim(0, tend)
 plt.ylim(0)
-ax = plt.gca()
 plt.ylabel('Population Size')
-plt.xlabel('Time')
+plt.xlabel('Time (Days)')
 plt.tight_layout()
 plt.show()
